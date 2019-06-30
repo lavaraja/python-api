@@ -87,7 +87,16 @@ def book_detail(request, pk):
         snippet = book.objects.get(pk=pk)
         print(snippet.name)
     except book.DoesNotExist:
-        return HttpResponse(status=404)
+        response = {
+
+            "status_code": 200,
+            "status": "success",
+            "Message" : "no matching books found",
+            "data": []
+
+        }
+        return JsonResponse(response, status=404)
+
 
     if request.method == 'GET':
         serializer = bookSerializer(snippet)

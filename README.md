@@ -1,5 +1,14 @@
 # python-api
 
+************************************
+Author : Lavaraja
+Email : Lavaraja.padala@gmail.com
+
+**********************************************
+
+Instructons :
+
+
 Setup :
 
 Create a python 3.6 virtual environment and activate. 
@@ -11,6 +20,10 @@ $ sudo apt-get install python3-venv
 $ mkdir mstakxenv && cd  mstakxenv
 $ python3 -m venv env
 $ source env/bin/activate
+
+
+
+
 
 Step2 :
 
@@ -44,6 +57,10 @@ $ sudo apt-get install python3-pip python3-dev libpq-dev postgresql postgresql-c
 Note: if we are running centos or RHEL we need to use equivalent command which is sudo yum install
 
 
+
+
+
+
 Step3 :
 
 Install PostgreSQL database as backend database for our local API. 
@@ -73,12 +90,14 @@ Success. You can now start the database server using:
     ./pg_ctl -D /home/lavaraja/database/pgdata -l logfile start
 
 
-Go to datadirectory given above and make the pg_hba.conf file have an entry like below.
+Go to datadirectory given above and list the pg_hba.conf file and it will have an entry like below.
 
-# TYPE  DATABASE        USER            ADDRESS                 METHOD
+*********
 
-# "local" is for Unix domain socket connections only
 local   all             all                                     trust
+
+************
+
 
 The authenication method is trust.which means by default any user on the local system is allowed to connect to database. 
 
@@ -101,6 +120,12 @@ Cannot read termcap database;
 using dumb terminal settings.
 postgres=# create database bookapi;
 
+
+
+
+
+
+
 Step4 :
 
 Create a file name config.py under /home/lavaraja/mstakxenv/python-api/pythonapi/pythonapi.
@@ -117,6 +142,11 @@ DB_USER='postgres'
 DB_PASSWORD=*******
 DB_HOST= 'localhost'
 DB_PORT='5433'
+
+
+
+
+
 
 
 Step5 :
@@ -141,7 +171,112 @@ Django version 2.2.2, using settings 'pythonapi.settings'
 Starting development server at http://127.0.0.1:8080/
 Quit the server with CONTROL-C.
 
-If everthing goes fine then the server will start and show the local url for our use. . 
+If everthing goes fine then the server will start and show the local url for our use. Now our API is ready for use. 
+
+
+Testing :
+
+Requirement 1
+When the endpoint:
+GET http://localhost:8080/api/external-books?name=:nameOfABook
+
+Open Browser or Using Curl run our GET request. 
+
+http://localhost:8080/api/external-books?name=A%20Game%20of%20Thrones
+
+
+Response :
+{"status_code": 200, "status": "success", "data": {"name": {"0": "A Game of Thrones"}, "isbn": {"0": "978-0553103540"}, "authors": {"0": ["George R. R. Martin"]}, "number_of_pages": {"0": 694}, "publisher": {"0": "Bantam Books"}, "country": {"0": "United States"}, "release_date": {"0": "1996-08-01T00:00:00"}}}
+
+
+Request: 
+
+http://localhost:8080/api/external-books?name=test
+
+Response :
+
+{"status_code": 200, "status": "success", "data": []}
+
+
+
+Requirement 2
+
+
+Create :
+When the endpoint:
+POST http://localhost:8080/api/v1/books
+
+Request :
+
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{ "name": "My third Book", "isbn": "123-321324357", "authors": ["mstakx", "lavaraja"], "number_of_pages": 350, "publisher": "Acme Books", "country": "india", "release_date": "2019-08-01"}' \
+  http://localhost:8080/api/v1/books
+  
+  
+Response :
+  
+{"status_code": 200, "status": "success", "data": {"id": 6, "name": "My third Book", "isbn": "123-321324357", "authors": ["mstakx", "lavaraja"], "number_of_pages": 350, "publisher": "Acme Books", "country": "india", "release_date": "2019-08-01"}}
+  
+
+
+Read :
+
+When the endpoint:
+GET http://localhost:8080/api/v1/books
+
+$ curl --header "Content-Type: application/json"   --request GET  http://localhost:8080/api/v1/books
+
+
+{"status_code": 200, "status": "success", "data": [{"id": 1, "name": "My First Book", "isbn": "123-3213243567", "authors": ["John Doe", "lavaraja"], "number_of_pages": 350, "publisher": "Acme Books", "country": "United States", "release_date": "2019-08-01"}, {"id": 2, "name": "My second Book", "isbn": "123-321324357", "authors": ["mstakx", "lavaraja"], "number_of_pages": 350, "publisher": "Acme Books", "country": "india", "release_date": "2019-08-01"}, {"id": 4, "name": "My second Book", "isbn": "123-321324357", "authors": ["linux torlvards", "lavaraja"], "number_of_pages": 350, "publisher": "Acme Books", "country": "india", "release_date": "2019-08-01"}, {"id": 3, "name": "My second Book", "isbn": "123-321324357", "authors": ["mstakx", "lavaraja"], "number_of_pages": 350, "publisher": "Acme Books", "country": "india", "release_date": "2019-08-01"}, {"id": 5, "name": "My third Book", "isbn": "123-321324357", "authors": ["mstakx", "lavaraja"], "number_of_pages": 350, "publisher": "Acme Books", "country": "india", "release_date": "2019-08-01"}, {"id": 6, "name": "My third Book", "isbn": "123-321324357", "authors": ["mstakx", "lavaraja"], "number_of_pages": 350, "publisher": "Acme Books", "country": "india", "release_date": "2019-08-01"}]}
+
+
+Update :
+updating auther for a book :
+
+http://localhost:8080/api/v1/books/7/
+
+{"id": 7, "name": "My third Book", "isbn": "123-321324357",
+"authors": ["mstakx", "lavaraja", "Petyr Baelish"],
+"number_of_pages": 400, "publisher": "Acme Books", 
+"country": "United States", "release_date": "1998-08-01"}
+
+Will add one more author Arya Stark to book item 7
+
+ curl --header "Content-Type: application/json"   --request PATCH   --data '{"id": 7, "name": "My third Book", "isbn": "123-321324357", "authors": ["mstakx", "lavaraja","Petyr Baelish","Arya Stark"], "number_of_pages": 400, "publisher": "Acme Books", "country": "United States", "release_date": "1998-08-01"}'   http://localhost:8080/api/v1/books/7/
+ 
+ Response :
+ 
+{"id": 7, "name": "My third Book", "isbn": "123-321324357", 
+"authors": ["mstakx", "lavaraja", "Petyr Baelish", "Arya Stark"],
+"number_of_pages": 400, "publisher": "Acme Books", "country": "United States", "release_date": "1998-08-01"}
+
+Now authers are updated. 
+
+
+Delete
+When the endpoint:
+DELETE http://localhost:8080/api/v1/books/:id
+
+We will delete the last book no 7. 
+
+Before delete :
+
+http://localhost:8080/api/v1/books/7/
+
+{"id": 7, "name": "My third Book", "isbn": "123-321324357", "authors": ["mstakx", "lavaraja", "Petyr Baelish", "Arya Stark"], "number_of_pages": 400, "publisher": "Acme Books", "country": "United States", "release_date": "1998-08-01"}
+
+
+ curl --header "Content-Type: application/json"   --request DELETE   http://localhost:8080/api/v1/books/7/
+
+
+After delete :
+
+http://localhost:8080/api/v1/books/7/
+
+{"status_code": 200, "status": "success", "Message": "no matching books found", "data": []}
+
+Also highlighted json response can be seen by running URL in the browser. 
 
 
 

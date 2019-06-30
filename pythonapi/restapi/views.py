@@ -70,7 +70,7 @@ def book_list(request):
             serializer.save()
             response = {
 
-                "status_code": 200,
+                "status_code": 201,
                 "status": "success",
                 "data": serializer.data
 
@@ -85,6 +85,7 @@ def book_detail(request, pk):
     """
     try:
         snippet = book.objects.get(pk=pk)
+        print(snippet.name)
     except book.DoesNotExist:
         return HttpResponse(status=404)
 
@@ -98,8 +99,34 @@ def book_detail(request, pk):
         if serializer.is_valid():
             serializer.save()
             return JsonResponse(serializer.data)
+        return JsonResponse(serializer.errors, status=200)
+
+    elif request.method == 'PATCH':
+        data = JSONParser().parse(request)
+        serializer = bookSerializer(snippet, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            response = {
+
+                "status_code": 200,
+                "status": "success",
+                "message": "The book {} was updated successfully".format(snippet.book),
+                "data": serializer.data
+
+            }
+            return JsonResponse(response)
+
         return JsonResponse(serializer.errors, status=400)
 
     elif request.method == 'DELETE':
+        #serializer = bookSerializer(snippet)
+        response = {
+
+            "status_code": 200,
+            "status": "success",
+            "message": "The book {} was deleted successfully".format(snippet.book),
+            "data" : []
+
+        }
         snippet.delete()
-        return HttpResponse(status=204)
+        return HttpResponse(response,status=204)
